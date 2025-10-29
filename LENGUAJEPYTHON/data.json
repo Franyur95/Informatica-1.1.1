@@ -1,0 +1,86 @@
+{
+    "students": [
+        {
+            "id": 1,
+            "name": "ROSALIA VARGAS",
+            "dni": "11222333",
+            "grade": "Desarrollo de Software - 1er A\u00f1o",
+            "registeredAt": "2025-10-14T15:52:25.419498"
+        },
+        {
+            "id": 2,
+            "name": "karen martinez",
+            "dni": "55666777",
+            "grade": "Desarrollo de Software - 1er A\u00f1o",
+            "registeredAt": "2025-10-19T23:10:42.307003"
+        },
+        {
+            "id": 3,
+            "name": "karen Juarez",
+            "dni": "77888999",
+            "grade": "Desarrollo de Software - 1er A\u00f1o",
+            "registeredAt": "2025-10-20T00:21:38.170798"
+        },
+        {
+            "id": 4,
+            "name": "maria juarez",
+            "dni": "11122333",
+            "grade": "Desarrollo de Software - 1er A\u00f1o",
+            "registeredAt": "2025-10-20T00:31:23.631359"
+        },
+        {
+            "id": 5,
+            "name": "Silvina Luc\u00eda Rueda",
+            "dni": "42377049",
+            "grade": "Desarrollo de Software - 1er A\u00f1o",
+            "registeredAt": "2025-10-20T16:48:57.224168"
+        },
+        {
+            "id": 6,
+            "name": "silivna lucia rueda",
+            "dni": "55444666",
+            "grade": "Desarrollo de Software - 1er A\u00f1o",
+            "registeredAt": "2025-10-29T10:46:44.385490"
+        },
+        {
+            "id": 7,
+            "name": "loola",
+            "dni": "44555661",
+            "grade": "Desarrollo de Software - 1er A\u00f1o",
+            "registeredAt": "2025-10-29T10:54:30.287997"
+        },
+        {
+            "id": 8,
+            "name": "jklj",
+            "dni": "22222222",
+            "grade": "Desarrollo de Software - 1er A\u00f1o",
+            "registeredAt": "2025-10-29T10:58:32.994047"
+        }
+    ],
+    "attendanceRecords": [
+        {
+            "id": 1,
+            "studentName": "silivna lucia rueda",
+            "studentDNI": "55444666",
+            "studentGrade": "Desarrollo de Software - 1er A\u00f1o",
+            "date": "2025-10-29",
+            "time": "2025-10-29T10:46:48.699610"
+        },
+        {
+            "id": 2,
+            "studentName": "loola",
+            "studentDNI": "44555661",
+            "studentGrade": "Desarrollo de Software - 1er A\u00f1o",
+            "date": "2025-10-29",
+            "time": "2025-10-29T10:54:35.812343"
+        },
+        {
+            "id": 3,
+            "studentName": "jklj",
+            "studentDNI": "22222222",
+            "studentGrade": "Desarrollo de Software - 1er A\u00f1o",
+            "date": "2025-10-29",
+            "time": "2025-10-29T10:58:38.009820"
+        }
+    ]
+}

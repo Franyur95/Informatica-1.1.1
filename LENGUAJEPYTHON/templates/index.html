@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Asistencia Estudiantil</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body {
+    box-sizing: border-box;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.header-title { white-space: nowrap; }
+
+/* --- Splash Screen --- */
+#splash-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-color: #3B82F6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: all 0.5s ease-in-out;
+}
+
+#splashText {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    letter-spacing: 2px;
+    transition: opacity 0.3s ease-in-out;
+}
+
+#splashText.fade-out { opacity: 0; }
+
+#splash-logo {
+    width: 300px; height: auto;
+    transition: all 2s ease-in-out;
+}
+
+#splash-logo.move-to-header {
+    animation: moveAndBounce 2s forwards;
+}
+
+@keyframes moveAndBounce {
+    0% { transform: translate(0,0) rotate(0deg) scale(1); }
+    70% { transform: translate(-220px,-280px) rotate(720deg) scale(0.25); }
+    100% { transform: translate(-220px,-280px) rotate(720deg) scale(0.25); }
+}
+
+#splash-screen.shrink-background {
+    width: 240px;
+    height: 240px;
+    border-radius: 0.5rem;
+    top: calc(50% - 120px);
+    left: calc(50% - 120px);
+}
+
+#header-logo { opacity: 0; transition: opacity 0.5s ease-in-out; }
+#header-logo.show { opacity: 1; }
+
+.container { opacity: 0; transition: opacity 1s ease-in-out; }
+.container.show-content { opacity: 1; }
+</style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-full">
+
+<!-- SPLASH SCREEN -->
+<div id="splash-screen">
+    <h1 id="splashText">BIENVENIDO</h1>
+    <img id="splash-logo" src="{{ url_for('static', filename='images/image.png') }}" alt="Logo IES N°11">
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-4 flex items-center justify-center">
+        <img id="header-logo" src="{{ url_for('static', filename='images/image.png') }}" alt="logo IES 11" class="w-20 h-20 object-contain mr-4">
+        <div class="text-center">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2 header-title">INSTITUTO DE EDUCACION SUPERIOR N°11</h1>
+            <p class="text-gray-600">Control de asistencia para estudiantes de Desarrollo de Software - 1er Año</p>
+            <div class="mt-4 text-lg font-semibold text-blue-600" id="currentDateTime"></div>
+        </div>
+    </div>
+
+    <!-- TAB DE ASISTENCIA Y REGISTROS -->
+    <div class="max-w-4xl mx-auto mb-8">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="flex border-b border-gray-200">
+                <button id="attendanceTab" class="flex-1 py-4 px-6 text-center font-semibold transition-colors duration-200 bg-blue-600 text-white">
+                    Marcar Asistencia
+                </button>
+                <button id="recordsTab" class="flex-1 py-4 px-6 text-center font-semibold transition-colors duration-200 bg-gray-100 text-gray-600 hover:bg-blue-200">
+                    Registro de Asistencia 
+                </button>
+            </div>
+            <div class="p-6">
+                <div id="attendanceTabContent">
+                    <!-- PANTALLA PRINCIPAL -->
+                    <div id="mainContent" class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 border border-gray-100">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl font-semibold text-gray-800 mb-4">¡Bienvenido a la clase de Informatica!</h2>
+                            <p class="text-gray-600 mb-6">¿Es tu primer clase?</p> 
+                        </div>
+                        <div class="space-y-4">
+                            <button id="yesRegisteredBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                                <span class="mr-2">✓</span> Sí, ya estoy registrado
+                            </button>
+                            <button id="noRegisteredBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                                <span class="mr-2">✗</span> No, necesito registrarme
+                            </button>
+                        </div>
+                    </div>
+                    <!-- FORMULARIO DE REGISTRO -->
+                    <div id="registerScreen" class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 hidden">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Registro de Estudiante</h2>
+                            <p class="text-gray-600">Completa tus datos para registrarte</p>
+                        </div>
+                        <form id="registerForm" class="space-y-4">
+                            <div>
+                                <label for="studentName" class="block text-sm font-medium text-gray-700 mb-2">Nombre y apellido</label>
+                                <input type="text" id="studentName" required 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    placeholder="Ej: Dolly Moreno">
+                            </div>
+                            <div>
+                                <label for="studentDNI" class="block text-sm font-medium text-gray-700 mb-2">DNI</label>
+                                <input type="text" id="studentDNI" required maxlength="8" pattern="[0-9]{8}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    placeholder="12345678">
+                            </div>
+                            <div class="flex space-x-3 pt-4">
+                                <button type="button" id="backToMainBtn" class="flex-1 bg-gray-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+                                    ← Volver
+                                </button>
+                                <button type="submit" class="flex-1 bg-gray-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+                                    Registrar
+                                </button>
+                            </div>
+                        </form>
+                        <div id="registerMessage" class="mt-4 p-3 rounded-lg text-center hidden"></div>
+                    </div>
+                    <!-- FORMULARIO DNI -->
+                    <div id="dniScreen" class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 hidden">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Ingresa tu DNI</h2>
+                            <p class="text-gray-600">Te reconoceremos automáticamente</p>
+                        </div>
+                        <form id="dniForm" class="space-y-4">
+                            <div>
+                                <label for="loginDNI" class="block text-sm font-medium text-gray-700 mb-2">DNI</label>
+                                <input type="text" id="loginDNI" required maxlength="8" pattern="[0-9]{8}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-center text-xl"
+                                    placeholder="12345678">
+                            </div>
+                            <div class="flex space-x-3 pt-4">
+                                <button type="button" id="backToMainBtn2" class="flex-1 bg-gray-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+                                    ← Volver
+                                </button>
+                                <button type="submit" class="flex-1 bg-gray-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+                                    Ingresar
+                                </button>
+                            </div>
+                        </form>
+                        <div id="dniMessage" class="mt-4 p-3 rounded-lg text-center hidden"></div>
+                    </div>
+                    <!-- PANTALLA ASISTENCIA -->
+                    <div id="attendanceScreen" class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 hidden">
+                        <div class="text-center mb-6">
+                            <div class="text-4xl mb-3">👋</div>
+                            <h2 class="text-xl font-semibold text-gray-800 mb-1">¡Hola, <span id="welcomeName"></span> marca tu asistencia!</h2>
+                            <p class="text-gray-600 text-sm"><span id="welcomeGrade"></span></p>
+                            <p class="text-gray-500 text-sm">DNI: <span id="welcomeDNI"></span></p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4 mb-6 text-center">
+                            <div class="text-2xl font-bold text-blue-600" id="currentTime"></div>
+                            <div class="text-sm text-gray-600" id="currentDate"></div>
+                        </div>
+                        <button id="markAttendanceBtn" class="w-full bg-gray-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center mb-4">
+                            <span class="mr-2">✓</span> Marcar Asistencia
+                        </button>
+                        <button id="backToMainBtn3" class="w-full bg-gray-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+                            ← Volver al inicio
+                        </button>
+                        <div id="attendanceMessage" class="mt-4 p-3 rounded-lg text-center hidden"></div>
+                    </div>
+                </div>
+
+                <!-- TAB REGISTRO DE ASISTENCIA -->
+                <div id="recordsTabContent" class="hidden">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">LISTA DE PRESENTES</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Estudiante</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">DNI</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTable" class="divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                    <div id="noAttendanceRecords" class="text-center py-8 text-gray-500">
+                        <p>No hay registros de asistencia </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const splashScreen = document.getElementById('splash-screen');
+    const splashLogo = document.getElementById('splash-logo');
+    const splashText = document.getElementById('splashText');
+    const headerLogo = document.getElementById('header-logo');
+    const mainContainer = document.querySelector('.container');
+
+    // --- SPLASH ANIMATIONS ---
+    setTimeout(() => {
+        splashScreen.classList.add('shrink-background');
+        splashText.classList.add('fade-out');
+        setTimeout(() => {
+            splashScreen.style.opacity = '0';
+            splashLogo.classList.add('move-to-header');
+            setTimeout(() => {
+                headerLogo.classList.add('show');
+                mainContainer.classList.add('show-content');
+                document.body.style.overflow = 'auto';
+                setTimeout(() => splashScreen.remove(), 500);
+            }, 2000);
+        }, 500);
+    }, 5000);
+
+    // --- FECHA Y HORA ---
+    function updateDateTime() {
+        const now = new Date();
+        const options = { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' };
+        document.getElementById('currentDateTime').textContent = now.toLocaleDateString('es-ES', options);
+        const timeElement = document.getElementById('currentTime');
+        const dateElement = document.getElementById('currentDate');
+        if(timeElement) timeElement.textContent = now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',hour12:true});
+        if(dateElement) dateElement.textContent = now.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+    }
+    updateDateTime();
+    setInterval(updateDateTime,1000);
+
+    // --- LÓGICA DE ASISTENCIA ---
+    let currentStudent = null;
+    const DEFAULT_GRADE = "Desarrollo de Software - 1er Año";
+
+    function hideAllScreensInAttendanceTab(){
+        ['mainContent','registerScreen','dniScreen','attendanceScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+        ['registerMessage','dniMessage','attendanceMessage'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+    }
+    function showScreen(screenId){ hideAllScreensInAttendanceTab(); document.getElementById(screenId).classList.remove('hidden'); }
+    function backToMainContent(){ currentStudent=null; showScreen('mainContent'); }
+    function showMessage(elementId,text,type){ 
+        const div=document.getElementById(elementId);
+        div.textContent=text;
+        div.className=`mt-4 p-3 rounded-lg text-center ${type==='success'?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}`;
+        div.classList.remove('hidden');
+        setTimeout(()=>div.classList.add('hidden'),3000);
+    }
+
+    // --- ACTUALIZAR TABLA DE PRESENTES ---
+    async function updateAttendanceTable(){
+        try{
+            const res = await fetch('/api/attendance/today');
+            const records = await res.json();
+            const tableBody = document.getElementById('attendanceTable');
+            const noRecordsDiv = document.getElementById('noAttendanceRecords');
+            if(records.length === 0){
+                tableBody.innerHTML = '';
+                noRecordsDiv.style.display = 'block';
+                return;
+            }
+            noRecordsDiv.style.display = 'none';
+            tableBody.innerHTML = '';
+            records.forEach(r=>{
+                const tr = document.createElement('tr');
+                tr.className = 'bg-white';
+                tr.innerHTML = `
+                    <td class="px-4 py-2 text-sm text-gray-700">${r.studentName}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700">${r.studentDNI}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700">${new Date(r.time).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        } catch(err){ console.error('Error al cargar asistencia:', err); }
+    }
+
+    // --- EVENTOS FORMULARIO REGISTRO ---
+    document.getElementById('registerForm').addEventListener('submit',async(e)=>{
+        e.preventDefault();
+        const name=document.getElementById('studentName').value.trim();
+        const dni=document.getElementById('studentDNI').value.trim();
+        if(!name||!dni||dni.length!==8){showMessage('registerMessage','Por favor completa todos los campos correctamente.','error');return;}
+        try{
+            const res=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,dni})});
+            const data=await res.json();
+            if(res.ok){
+                showMessage('registerMessage',data.message,'success');
+                document.getElementById('registerForm').reset();
+                currentStudent=data.student;
+                document.getElementById('welcomeName').textContent=currentStudent.name;
+                document.getElementById('welcomeGrade').textContent=currentStudent.grade||DEFAULT_GRADE;
+                document.getElementById('welcomeDNI').textContent=currentStudent.dni;
+                setTimeout(()=>showScreen('attendanceScreen'),1000);
+            } else showMessage('registerMessage',data.message||'Error en el registro.','error');
+        } catch(err){console.error(err);showMessage('registerMessage','Error de conexión con el servidor.','error');}
+    });
+
+    // --- VALIDACIÓN DNI INPUT ---
+    ['studentDNI','loginDNI'].forEach(id=>{
+        document.getElementById(id).addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^0-9]/g,'').slice(0,8); });
+    });
+
+    // --- TABS ---
+    function switchTab(activeTab){
+        const aT=document.getElementById('attendanceTab');
+        const rT=document.getElementById('recordsTab');
+        const aC=document.getElementById('attendanceTabContent');
+        const rC=document.getElementById('recordsTabContent');
+        if(activeTab==='attendance'){aT.className='flex-1 py-4 px-6 text-center font-semibold transition-colors duration-200 bg-blue-600 text-white';
+            rT.className='flex-1 py-4 px-6 text-center font-semibold transition-colors duration-200 bg-gray-100 text-gray-600 hover:bg-gray-200';
+            aC.classList.remove('hidden'); rC.classList.add('hidden');
+        } else {rT.className='flex-1 py-4 px-6 text-center font-semibold transition-colors duration-200 bg-blue-600 text-white';
+            aT.className='flex-1 py-4 px-6 text-center font-semibold transition-colors duration-200 bg-gray-100 text-gray-600 hover:bg-gray-200';
+            rC.classList.remove('hidden'); aC.classList.add('hidden');
+            updateAttendanceTable(); // ✅ Cargar tabla al abrir tab
+        }
+    }
+    document.getElementById('attendanceTab').addEventListener('click',()=>switchTab('attendance'));
+    document.getElementById('recordsTab').addEventListener('click',()=>switchTab('records'));
+
+    // --- BOTONES PANTALLA PRINCIPAL ---
+    document.getElementById('yesRegisteredBtn').addEventListener('click',()=>showScreen('dniScreen'));
+    document.getElementById('noRegisteredBtn').addEventListener('click',()=>showScreen('registerScreen'));
+    document.getElementById('backToMainBtn').addEventListener('click',backToMainContent);
+    document.getElementById('backToMainBtn2').addEventListener('click',backToMainContent);
+    document.getElementById('backToMainBtn3').addEventListener('click',backToMainContent);
+
+    // --- FORMULARIO DNI ---
+    document.getElementById('dniForm').addEventListener('submit',async(e)=>{
+        e.preventDefault();
+        const dni=document.getElementById('loginDNI').value.trim();
+        if(!dni||dni.length!==8){showMessage('dniMessage','Por favor ingresa un DNI válido','error');return;}
+        try{
+            const res=await fetch(`/api/student/${dni}`);
+            const data=await res.json();
+            if(res.ok){
+                currentStudent=data;
+                document.getElementById('welcomeName').textContent=currentStudent.name;
+                document.getElementById('welcomeGrade').textContent=currentStudent.grade||DEFAULT_GRADE;
+                document.getElementById('welcomeDNI').textContent=currentStudent.dni;
+                showScreen('attendanceScreen');
+            } else showMessage('dniMessage',data.message||'Estudiante no encontrado','error');
+        } catch(err){console.error(err);showMessage('dniMessage','Error de conexión con el servidor.','error');}
+    });
+
+    // --- MARCAR ASISTENCIA ---
+    document.getElementById('markAttendanceBtn').addEventListener('click', async()=>{
+        if(!currentStudent){ showMessage('attendanceMessage','No hay estudiante seleccionado.','error'); return; }
+        try{
+            const res = await fetch('/api/attendance',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({dni:currentStudent.dni})
+            });
+            const data = await res.json();
+            if(res.ok){
+                showMessage('attendanceMessage','Asistencia marcada correctamente','success');
+                await updateAttendanceTable(); // ✅ Actualiza tabla automáticamente
+            } else showMessage('attendanceMessage',data.message||'Error al marcar asistencia','error');
+        } catch(err){
+            console.error(err);
+            showMessage('attendanceMessage','Error de conexión con el servidor','error');
+        }
+    });
+});
+</script>
+</body>
+</html>
